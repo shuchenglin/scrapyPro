@@ -20,10 +20,12 @@ def main():
     
 
 
-    savePath = u'DouBan/data/Douban_Movie_250.xls'
-    #save data
-    saveData(datalist, savePath)
+    # savePath = u'DouBan/data/Douban_Movie_250.xls'
+    # save data
+    dbpath = 'test.db'
+    saveDataDB(datalist, dbpath)
     #askURL(baseurl)
+    print('爬取成功！！！')
 
 # 创建正则表达式对象
 # 超链接的规则
@@ -126,7 +128,46 @@ def saveData(datalist, savepath):
     # 保存execl
     book.save(savepath)
 
+# save database
+def saveDataDB(datalist, dbpath):
+    init_db(dbpath)
+    conn = sqlite3.connect(dbpath)
+    cur = conn.cursor()
+
+    for data in datalist:
+        for index in range(len(data)):
+            if index == 4 or index == 5:
+                continue
+            data[index] = '"'+data[index]+'"'
+        sql = 'insert into movie (info_link, pic_link,cname, ename, score, rated, inst, info) values(%s)'%",".join(data)
+        cur.execute(sql)
+        conn.commit()
+    conn.close()
+
+
+# 创建数据库
+def init_db(dbpath):
+    sql = '''
+        create table movie 
+        (
+            id integer primary key autoincrement,
+            info_link text,
+            pic_link text,
+            cname varchar,
+            ename varchar,
+            score numeric,
+            rated numeric,
+            inst text,
+            info text
+        )
+    '''
+    conn = sqlite3.connect(dbpath)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    conn.close()
 
 # main
 if __name__ == "__main__":
+    # init_db('movie.db')
     main()
